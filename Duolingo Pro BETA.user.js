@@ -143,9 +143,9 @@ if (JSON.parse(localStorage.getItem('DuolingoProSettingsTurboSolveMode')) === nu
     DuolingoProSettingsTurboSolveMode = JSON.parse(localStorage.getItem('DuolingoProSettingsTurboSolveMode'));
 }
 
-let DuolingoProSettingsHumaneSolvingMode = true;
+let DuolingoProSettingsHumaneSolvingMode = false;
 if (JSON.parse(localStorage.getItem('DuolingoProSettingsHumaneSolvingMode')) === null) {
-    DuolingoProSettingsHumaneSolvingMode = true; // default
+    DuolingoProSettingsHumaneSolvingMode = false; // default
 } else {
     DuolingoProSettingsHumaneSolvingMode = JSON.parse(localStorage.getItem('DuolingoProSettingsHumaneSolvingMode'));
 }
@@ -3287,11 +3287,11 @@ function injectDuolingoProSettingsBox() {
                 }
 
                 if (JSON.parse(localStorage.getItem('DuolingoProSettingsTurboSolveMode')) !== DuolingoProSettingsTurboSolveMode) {
-                    settingsStuff("Duolingo Pro Low Performance Mode", DuolingoProSettingsTurboSolveMode ? 'ON' : 'OFF');
+                    settingsStuff("Duolingo Pro TurboSolve Mode", DuolingoProSettingsTurboSolveMode ? 'ON' : 'OFF');
                 }
 
                 if (JSON.parse(localStorage.getItem('DuolingoProSettingsHumaneSolvingMode')) !== DuolingoProSettingsHumaneSolvingMode) {
-                    settingsStuff("Duolingo Pro ProBlock", DuolingoProSettingsHumaneSolvingMode ? 'ON' : 'OFF');
+                    settingsStuff("Duolingo Pro Humane Solving Mode", DuolingoProSettingsHumaneSolvingMode ? 'ON' : 'OFF');
                 }
 
                 localStorage.setItem('AutoSolverSettingsShowAutoSolverBox', AutoSolverSettingsShowAutoSolverBox);
@@ -3631,7 +3631,7 @@ async function solve() {
         }
     }
     try {
-        window.sol = findReact(document.getElementsByClassName('_3FiYg')[0]).props.currentChallenge;
+        window.sol = await findReact(document.getElementsByClassName('_3FiYg')[0]).props.currentChallenge;
     } catch {
         let next = document.querySelector('[data-test="player-next"]');
         if (next) {
@@ -3680,8 +3680,11 @@ async function solve() {
                 if (debug) {
                     document.getElementById("solveAllButton").innerText = 'Challenge Choice with Text Input';
                 }
+                try {
+                    window.sol = await findReact(document.getElementsByClassName('_3FiYg')[0]).props.currentChallenge;
+                }
+                catch { return }
                 let elm = document.querySelectorAll('[data-test="challenge-text-input"]')[0];
-                elm.focus();
                 let answer = window.sol.correctSolutions ? window.sol.correctSolutions[0].split(/(?<=^\S+)\s/)[1] : (window.sol.displayTokens ? window.sol.displayTokens.find(t => t.isBlank).text : window.sol.prompt);
                 if (!answer) return;
 
@@ -3731,8 +3734,11 @@ async function solve() {
             if (debug) {
                 document.getElementById("solveAllButton").innerText = 'Challenge Text Input';
             }
+            try {
+                window.sol = await findReact(document.getElementsByClassName('_3FiYg')[0]).props.currentChallenge;
+            }
+            catch { return }
             let elm = document.querySelectorAll('[data-test="challenge-text-input"]')[0];
-            elm.focus();
             let answer = window.sol.correctSolutions ? window.sol.correctSolutions[0] : (window.sol.displayTokens ? window.sol.displayTokens.find(t => t.isBlank).text : window.sol.prompt);
             if (!answer) return;
 
@@ -3748,8 +3754,11 @@ async function solve() {
             if (debug) {
                 document.getElementById("solveAllButton").innerText = 'Partial Reverse';
             }
+            try {
+                window.sol = await findReact(document.getElementsByClassName('_3FiYg')[0]).props.currentChallenge;
+            }
+            catch { return }
             let elm = document.querySelector('[data-test*="challenge-partialReverseTranslate"]')?.querySelector("span[contenteditable]");
-            elm.focus();
             let answer = window.sol?.displayTokens?.filter(t => t.isBlank)?.map(t => t.text)?.join()?.replaceAll(',', '');
             if (!answer) return;
 
@@ -3765,8 +3774,11 @@ async function solve() {
             if (debug) {
                 document.getElementById("solveAllButton").innerText = 'Challenge Translate Input';
             }
+            try {
+                window.sol = await findReact(document.getElementsByClassName('_3FiYg')[0]).props.currentChallenge;
+            }
+            catch { return }
             const elm = document.querySelector('textarea[data-test="challenge-translate-input"]');
-            elm.focus();
             let answer = window.sol.correctSolutions ? window.sol.correctSolutions[0] : window.sol.prompt;
             if (!answer) return;
 
@@ -3782,7 +3794,7 @@ async function solve() {
         }
         await nextButtonClick();
         anonymousSolveDetails('1');
-        nextButtonClick();
+        await nextButtonClick();
     }
     isSolving = false;
 }
@@ -3849,7 +3861,7 @@ async function nextButtonClick() {
         new Promise(async (resolve) => {
             let next = await waitForElm('[data-test="player-next"]');
             await until(_ => isTokenRunning == false);
-            if (simulated == true) await sleep(50, 50);
+            await sleep(50, 50);
             next.click();
             resolve();
         }),
